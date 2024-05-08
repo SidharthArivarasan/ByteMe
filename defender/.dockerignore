@@ -1,6 +1,8 @@
 venv/
 logs/
 .git/
+models/model_1.pkl
+models/model_2.pkl
 models/model_3.pkl
 models/*.joblib
 models/*.save
