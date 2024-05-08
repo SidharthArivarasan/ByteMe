@@ -2,13 +2,25 @@ import os
 import logging
 
 from flask import Flask, jsonify, request
+from gevent.pywsgi import WSGIServer
+from gevent.pool import Pool
 
 from pipeline import get_result
 
-root_dir = os.path.abspath(os.path.dirname(__file__))
-print(f"Running from {root_dir}")
+STATUS_OK = 200
+STATUS_BAD_REQUEST = 400
+SERVER_PORT = 8080
 
-def setup_logging(log_file):
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+logging.info(f"Running from {ROOT_DIR}")
+
+
+def setup_logging(log_file: str):
+    """This function sets up the logging configuration
+
+    Args:
+        log_file (str): The path to the log file
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     file_handler = logging.FileHandler(log_file)
@@ -17,48 +29,69 @@ def setup_logging(log_file):
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
+
 setup_logging('logs/server.log')
 
+
+def create_response(data: dict, status: int) -> flask.Response:
+    """This function creates a response object
+
+    Args:
+        data (dict): data to be sent in the response
+        status (int): status code of the response
+
+    Returns:
+        flask.Response: response object
+    """
+    resp = jsonify(data)
+    resp.status_code = status
+    return resp
+
+
 def create_app():
-    
+
     app = Flask(__name__)
 
     @app.route('/', methods=['POST'])
-    def post():
+    def post() -> flask.Response:
+        """Process the POST request.
+        The request should contain a binary file in the body and the content type should be application/octet-stream.
+
+        Returns:
+            flask.Response: Response object of the request in JSON format {"result": 0/1}
+        """
         result = 0
-        
+
         if request.headers['Content-Type'] != 'application/octet-stream':
             resp = jsonify({'error': 'expecting application/octet-stream'})
-            resp.status_code = 400  # Bad Request
+            resp.status_code = STATUS_BAD_REQUEST
             logging.error("Expecting application/octet-stream")
             return resp
 
         bytez = request.data
-        bin_file_path = os.path.join(root_dir, 'bin.exe')
+        bin_file_path = os.path.join(ROOT_DIR, 'bin.exe')
+
         with open(bin_file_path, 'wb') as f:
             f.write(bytez)
 
-        # Do something with the binary data if needed
         try:
             result = get_result(bin_file_path)
         except Exception as e:
             # if error --> report as benign
-            logging.warning(f"Parse Error: {e}")
+            logging.error(f"Pipeline Error: {e}")
 
-        resp = jsonify({'result': result})
-        resp.status_code = 200
-        return resp
+        return create_response({'result': result}, STATUS_OK)
 
     return app
 
-if __name__ == "__main__":
+
+def main():
     app = create_app()
-
-    port = int(os.environ.get("PORT", 8080))
-
-    from gevent.pywsgi import WSGIServer
-    from gevent.pool import Pool
-
+    port = int(os.environ.get("PORT", SERVER_PORT))
     http_server = WSGIServer(('', port), app, spawn=Pool())
-    print(f"Server running on port {port}")
+    logging.info(f"Server running on port {port}")
     http_server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()
