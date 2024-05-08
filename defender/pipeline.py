@@ -16,22 +16,22 @@ def load_gzip_pickle(filename):
     return obj
 
 
-# load rf_classifier from disk
-print("Loading model 1...")
-ember_classifier = load_gzip_pickle("./models/ember_model.pkl") # trained model on updated dataset
-print("Loading model 2...")
-# ember_classifier_2 = load_gzip_pickle("./models/model_3.pkl") # trained model on full dataset (2018)
-print("Loading yara rules...")
+logging.info("Loading model 1...")
+# trained model on updated dataset
+ember_classifier = load_gzip_pickle("./models/ember_model.pkl")
+
+logging.info("Loading yara rules...")
 malware_rules, packer_crypto_rules, yara_gen_rules = get_rules()
 
 
-def get_ember_prediction(features, classifier):
+def get_ember_prediction(features, classifier, threshold=None):
     f = pd.DataFrame([features])
-    # threshold = 0.80
-    # y_pred = classifier.predict_threshold(f, threshold=threshold)
-    
-    y_pred = classifier.predict(f)
-    
+
+    if threshold:
+        y_pred = classifier.predict_threshold(f, threshold=threshold)
+    else:
+        y_pred = classifier.predict(f)
+
     if len(y_pred) == 1:
         return y_pred[0]
     else:
@@ -48,7 +48,8 @@ def get_result(filepath: str) -> int:
 
     features_2 = extract_features_2(filepath)
     em1 = get_ember_prediction(features_2, ember_classifier)
-    logging.info(f"EMBER1: {em1}, Packer: {has_packer_crypto_signature}, Generic: {has_generic_signature}")
+    logging.info(
+        f"EMBER1: {em1}, Packer: {has_packer_crypto_signature}, Generic: {has_generic_signature}")
     major_vote = has_packer_crypto_signature + has_generic_signature + em1
 
     if major_vote >= 2:
