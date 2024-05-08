@@ -1,7 +1,7 @@
 import os
 import logging
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from gevent.pywsgi import WSGIServer
 from gevent.pool import Pool
 
@@ -33,7 +33,7 @@ def setup_logging(log_file: str):
 setup_logging('logs/server.log')
 
 
-def create_response(data: dict, status: int) -> flask.Response:
+def create_response(data: dict, status: int) -> Response:
     """This function creates a response object
 
     Args:
@@ -41,7 +41,7 @@ def create_response(data: dict, status: int) -> flask.Response:
         status (int): status code of the response
 
     Returns:
-        flask.Response: response object
+        Response: response object
     """
     resp = jsonify(data)
     resp.status_code = status
@@ -53,12 +53,12 @@ def create_app():
     app = Flask(__name__)
 
     @app.route('/', methods=['POST'])
-    def post() -> flask.Response:
+    def post() -> Response:
         """Process the POST request.
         The request should contain a binary file in the body and the content type should be application/octet-stream.
 
         Returns:
-            flask.Response: Response object of the request in JSON format {"result": 0/1}
+            Response: Response object of the request in JSON format {"result": 0/1}
         """
         result = 0
 
