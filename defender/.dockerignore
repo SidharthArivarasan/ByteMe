@@ -1,0 +1,13 @@
+venv/
+logs/
+.git/
+models/model_3.pkl
+models/*.joblib
+models/*.save
+models/*.h5
+models/*.ipynb
+bin.exe
+README.md
+requirements.txt
+run.sh
+stop.sh
