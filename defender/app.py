@@ -1,6 +1,8 @@
 import os
 import logging
 
+import hashlib
+
 from flask import Flask, jsonify, request, Response
 from gevent.pywsgi import WSGIServer
 from gevent.pool import Pool
@@ -62,6 +64,12 @@ def create_app():
         """
         result = 0
 
+        if 'Content-Type' not in request.headers:
+            resp = jsonify({'error': 'missing Content-Type'})
+            resp.status_code = STATUS_BAD_REQUEST
+            logging.error("Missing Content-Type")
+            return resp
+
         if request.headers['Content-Type'] != 'application/octet-stream':
             resp = jsonify({'error': 'expecting application/octet-stream'})
             resp.status_code = STATUS_BAD_REQUEST
@@ -69,7 +77,9 @@ def create_app():
             return resp
 
         bytez = request.data
-        bin_file_path = os.path.join(ROOT_DIR, 'bin.exe')
+        # temp random bin_file_path
+        md5 = hashlib.md5(bytez).hexdigest()
+        bin_file_path = os.path.join("/tmp", f'{md5}.exe')
 
         with open(bin_file_path, 'wb') as f:
             f.write(bytez)
