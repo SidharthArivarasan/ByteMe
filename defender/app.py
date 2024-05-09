@@ -3,7 +3,7 @@ import logging
 
 import hashlib
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, render_template
 from gevent.pywsgi import WSGIServer
 from gevent.pool import Pool
 
@@ -54,44 +54,54 @@ def create_app():
 
     app = Flask(__name__)
 
-    @app.route('/', methods=['POST'])
-    def post() -> Response:
-        """Process the POST request.
-        The request should contain a binary file in the body and the content type should be application/octet-stream.
+    @app.route('/', methods=['POST', 'GET'])
+    def index() -> Response:
+        if request.method == 'GET':
+            return render_template('index.html')
+        elif request.method == 'POST':
+            result = 0
+            bytez = None
+            is_api = False
+            if 'file' in request.files:
+                is_api = False
+            else:
+                is_api = True
+                if 'Content-Type' not in request.headers:
+                    resp = jsonify({'error': 'missing Content-Type'})
+                    resp.status_code = STATUS_BAD_REQUEST
+                    logging.error("Missing Content-Type")
+                    return resp
 
-        Returns:
-            Response: Response object of the request in JSON format {"result": 0/1}
-        """
-        result = 0
+                if request.headers['Content-Type'] != 'application/octet-stream':
+                    resp = jsonify({'error': 'expecting application/octet-stream'})
+                    resp.status_code = STATUS_BAD_REQUEST
+                    logging.error("Expecting application/octet-stream")
+                    return resp
+            
+            if not is_api:
+                bytez = request.files['file'].read()
+            else:
+                bytez = request.data
+            # temp random bin_file_path
+            md5 = hashlib.md5(bytez).hexdigest()
+            bin_file_path = os.path.join("/tmp", f'{md5}.exe')
 
-        if 'Content-Type' not in request.headers:
-            resp = jsonify({'error': 'missing Content-Type'})
-            resp.status_code = STATUS_BAD_REQUEST
-            logging.error("Missing Content-Type")
-            return resp
+            with open(bin_file_path, 'wb') as f:
+                f.write(bytez)
 
-        if request.headers['Content-Type'] != 'application/octet-stream':
-            resp = jsonify({'error': 'expecting application/octet-stream'})
-            resp.status_code = STATUS_BAD_REQUEST
-            logging.error("Expecting application/octet-stream")
-            return resp
-
-        bytez = request.data
-        # temp random bin_file_path
-        md5 = hashlib.md5(bytez).hexdigest()
-        bin_file_path = os.path.join("/tmp", f'{md5}.exe')
-
-        with open(bin_file_path, 'wb') as f:
-            f.write(bytez)
-
-        try:
-            result = get_result(bin_file_path)
-        except Exception as e:
-            # if error --> report as benign
-            logging.error(f"Pipeline Error: {e}")
-
-        return create_response({'result': result}, STATUS_OK)
-
+            try:
+                result = get_result(bin_file_path)
+            except Exception as e:
+                # if error --> report as benign
+                logging.error(f"Pipeline Error: {e}")
+            
+            if is_api:
+                return create_response({'result': result}, STATUS_OK)
+            else:
+                results = f"Is Malicious: {result}"
+                return render_template('response.html', results=results)
+        else:
+            return create_response({'error': 'Method not allowed'}, STATUS_BAD_REQUEST)
     return app
 
 
