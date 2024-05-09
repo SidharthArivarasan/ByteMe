@@ -20,7 +20,7 @@ def compile_and_save_rules(directory):
         raise FileNotFoundError(f"Directory {directory} not found")
     folder_name = os.path.basename(directory)
     filepaths = dict()
-    build_dir = "/root/BytMe_new/signatures/build"
+    build_dir = "./signatures/build"
     out_file = os.path.join(build_dir, f"{folder_name}.yarac")
 
     for root, dirs, files in os.walk(directory):
