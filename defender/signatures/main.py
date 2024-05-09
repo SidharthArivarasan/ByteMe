@@ -2,6 +2,8 @@ import os
 
 import yara
 
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
+
 
 def is_valid_yara_rule_file(file_path):
     try:
@@ -71,9 +73,9 @@ def get_rules():
         packer_crypto_rules: YARA rules for packer/crypter detection
         yara_gen_rules: YARA rules for malware detection
     """
-    malware_rules = load_rules_from_file("./signatures/build/malware.yarac")
-    packer_crypto_rules = load_rules_from_file("./signatures/build/packer_crypto.yarac")
-    yara_gen_rules = load_rules_from_file("./signatures/build/yaraGen.yarac")
+    malware_rules = load_rules_from_file(os.path.join(ROOT_DIR, "build", "malware.yarac"))
+    packer_crypto_rules = load_rules_from_file(os.path.join(ROOT_DIR, "build", "packer_crypto.yarac"))
+    yara_gen_rules = load_rules_from_file(os.path.join(ROOT_DIR, "build", "yaraGen.yarac"))
     return malware_rules, packer_crypto_rules, yara_gen_rules
 
 
