@@ -1,4 +1,4 @@
-from .main import compile_and_save_rules
+from main import compile_and_save_rules
 
 
 compile_and_save_rules("signatures/malware")
