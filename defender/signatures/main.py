@@ -22,7 +22,11 @@ def compile_and_save_rules(directory):
         raise FileNotFoundError(f"Directory {directory} not found")
     folder_name = os.path.basename(directory)
     filepaths = dict()
-    build_dir = "./signatures/build"
+    build_dir = os.path.join(ROOT_DIR, "build")
+    
+    if not os.path.exists(build_dir):
+        os.makedirs(build_dir)
+
     out_file = os.path.join(build_dir, f"{folder_name}.yarac")
 
     for root, dirs, files in os.walk(directory):
