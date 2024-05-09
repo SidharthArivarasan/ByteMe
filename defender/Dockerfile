@@ -9,5 +9,9 @@ COPY requirements.docker.txt .
 RUN pip3 install -r requirements.docker.txt
 COPY . /app
 
+WORKDIR /app/signatures
+RUN python compile.py
+WORKDIR /app
+
 EXPOSE $PORT
 CMD ["python", "app.py", "$PORT"]
