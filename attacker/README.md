@@ -33,7 +33,7 @@ Our variants demonstrated the ability to successfully bypass the defense models,
 ## Competition Results
 Sadly, it wasn't as good as the local results but still reliable and better that most teams.
 
-![ ](https://github.com/seyyedaliayati/ByteMe/tree/main/imgs/attacker_results.png)
+![](https://raw.githubusercontent.com/seyyedaliayati/ByteMe/main/imgs/attacker_results.png)
 
 ## Usage
 Modify a single binary
