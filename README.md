@@ -54,11 +54,11 @@ Our team is composed of dedicated and skilled members who have contributed signi
 
 - **Ali Ayati** - Defense Engineer
 
-  It's me :)) My role was devising and building the pipeline to successfully pass the defense challenge. I was also responsible to make our system met the required accuracy and efficiency benchmarks.
+  Ali was devising and building the pipeline to successfully pass the defense challenge. He was also responsible to make our system met the required accuracy and efficiency benchmarks.
 
 - **Sidharth Arivarasan** - Database Engineer
 
-  Sidharth was responsible for managing and optimizing the database, which was crucial for the efficient handling and processing of large datasets.
+  I was responsible for managing and optimizing the database, which was crucial for the efficient handling and processing of large datasets.
 
 - **Sahil Salunkhe** - Attack Engineer
 
